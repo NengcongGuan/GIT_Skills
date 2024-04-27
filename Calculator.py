@@ -1,66 +1,85 @@
 import tkinter as tk
+from tkinter import ttk
 
 def add_digit(digit):
-    current = display.get()
+    current = calc_display.get()
     if current == '0':
-        display.delete(0, tk.END)
-    display.insert(tk.END, digit)
+        calc_display.delete(0, tk.END)
+    calc_display.insert(tk.END, digit)
 
 def add_operation(operator):
-    current = display.get()
+    current = calc_display.get()
     if current[-1] in '+-*/':
         return
-    display.insert(tk.END, operator)
+    calc_display.insert(tk.END, operator)
 
 def clear_display():
-    display.delete(0, tk.END)
-    display.insert(0, '0')
+    calc_display.delete(0, tk.END)
+    calc_display.insert(0, '0')
 
 def calculate_result():
     try:
-        result = eval(display.get())
-        display.delete(0, tk.END)
-        display.insert(0, str(result))
+        result = eval(calc_display.get())
+        calc_display.delete(0, tk.END)
+        calc_display.insert(0, str(result))
     except Exception as e:
         clear_display()
-        display.insert(0, "Error")
+        calc_display.insert(0, "Error")
 
-def create_button(parent, text, command, row, column, columnspan=1):
-    button = tk.Button(parent, text=text, command=command)
-    button.grid(row=row, column=column, columnspan=columnspan, sticky="nsew")
-    return button
+def update_label(*args):
+    typed_text.set(entry.get())
+
+def create_calculator_tab(parent):
+    frame = ttk.Frame(parent)
+    global calc_display
+    calc_display = tk.Entry(frame, justify='right', font=('Arial', 15))
+    calc_display.insert(0, '0')
+    calc_display.grid(row=0, column=0, columnspan=4, sticky="we")
+
+    ttk.Button(frame, text='C', command=clear_display).grid(row=1, column=0)
+    ttk.Button(frame, text='/', command=lambda: add_operation('/')).grid(row=1, column=3)
+    ttk.Button(frame, text='*', command=lambda: add_operation('*')).grid(row=2, column=3)
+    ttk.Button(frame, text='-', command=lambda: add_operation('-')).grid(row=3, column=3)
+    ttk.Button(frame, text='+', command=lambda: add_operation('+')).grid(row=4, column=3)
+    ttk.Button(frame, text='=', command=calculate_result).grid(row=5, column=3)
+
+    for i in range(1, 4):
+        ttk.Button(frame, text=str(i), command=lambda x=i: add_digit(str(x))).grid(row=2, column=i-1)
+    for i in range(4, 7):
+        ttk.Button(frame, text=str(i), command=lambda x=i: add_digit(str(x))).grid(row=3, column=i-4)
+    for i in range(7, 10):
+        ttk.Button(frame, text=str(i), command=lambda x=i: add_digit(str(x))).grid(row=4, column=i-7)
+    ttk.Button(frame, text='0', command=lambda: add_digit('0')).grid(row=5, column=0, columnspan=3, sticky="we")
+
+    return frame
+
+def create_reader_tab(parent):
+    frame = ttk.Frame(parent)
+    global typed_text, entry
+    typed_text = tk.StringVar()
+
+    entry = tk.Entry(frame, font=('Arial', 14))
+    entry.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+    entry.bind("<KeyRelease>", update_label)
+
+    label = tk.Label(frame, textvariable=typed_text, font=('Arial', 14))
+    label.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+    
+    return frame
 
 def main():
     root = tk.Tk()
-    root.title("Calculator")
+    root.title("Multi-Function Application")
 
-    global display
-    display = tk.Entry(root, justify='right', font=('Arial', 15))
-    display.insert(0, '0')
-    display.grid(row=0, column=0, columnspan=4, stick="we")
+    tab_control = ttk.Notebook(root)
 
-    root.grid_columnconfigure(0, weight=1)
-    root.grid_columnconfigure(1, weight=1)
-    root.grid_columnconfigure(2, weight=1)
-    root.grid_columnconfigure(3, weight=1)
-    root.grid_rowconfigure(1, weight=1)
-    root.grid_rowconfigure(2, weight=1)
-    root.grid_rowconfigure(3, weight=1)
-    root.grid_rowconfigure(4, weight=1)
+    calculator_tab = create_calculator_tab(tab_control)
+    reader_tab = create_reader_tab(tab_control)
 
-    create_button(root, 'C', clear_display, 1, 0)
-    create_button(root, '/', lambda: add_operation('/'), 1, 3)
-    for i in range(1, 4):
-        create_button(root, str(i), lambda x=i: add_digit(str(x)), 2, i-1)
-    create_button(root, '*', lambda: add_operation('*'), 2, 3)
-    for i in range(4, 7):
-        create_button(root, str(i), lambda x=i: add_digit(str(x)), 3, i-4)
-    create_button(root, '-', lambda: add_operation('-'), 3, 3)  # Fixed -- the sign is not correct
-    for i in range(7, 10):
-        create_button(root, str(i), lambda x=i: add_digit(str(x)), 4, i-7)
-    create_button(root, '+', lambda: add_operation('+'), 4, 3)  # Fixed -- the sign is not correct
-    create_button(root, '=', calculate_result, 5, 3)
-    create_button(root, '0', lambda: add_digit('0'), 5, 0, 3)
+    tab_control.add(calculator_tab, text='Calculator')
+    tab_control.add(reader_tab, text='Reader')
+
+    tab_control.pack(expand=1, fill="both")
 
     root.mainloop()
 
