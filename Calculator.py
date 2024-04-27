@@ -55,10 +55,10 @@ def main():
     create_button(root, '*', lambda: add_operation('*'), 2, 3)
     for i in range(4, 7):
         create_button(root, str(i), lambda x=i: add_digit(str(x)), 3, i-4)
-    create_button(root, '-', lambda: add_operation('+'), 3, 3)  # Bug -- the sign is not correct
+    create_button(root, '-', lambda: add_operation('-'), 3, 3)  # Fixed -- the sign is not correct
     for i in range(7, 10):
         create_button(root, str(i), lambda x=i: add_digit(str(x)), 4, i-7)
-    create_button(root, '+', lambda: add_operation('-'), 4, 3)  # Bug -- the sign is not correct
+    create_button(root, '+', lambda: add_operation('+'), 4, 3)  # Fixed -- the sign is not correct
     create_button(root, '=', calculate_result, 5, 3)
     create_button(root, '0', lambda: add_digit('0'), 5, 0, 3)
 
